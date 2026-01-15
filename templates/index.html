@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LiveChat</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div id="authentication-box" class="authentication">
+        <div class="username-input">
+            <h2>Enter your name:</h2>
+            <input type="text" id="username-input" maxlength="20">
+            <button id="join-button">Join</button>
+        </div>
+    </div>
+
+
+    <div class="chat-box">
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message" >
+            <button id="send-button">Send</button>
+        </div>
+
+    </div>
+</body>
+<script src="../static/script.js"></script>
+</html>

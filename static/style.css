@@ -1,0 +1,80 @@
+body {
+    background: #181818;
+    color: #f1f1f1;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.authentication {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(24, 24, 24, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.authentication-box{
+    background: #23272a;
+    padding: 20px;
+    text-align: center;
+}
+
+.chat-box {
+    background: #23272a;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    width: 600px;
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-messages {
+    background: #2c2f33;
+    border-radius: 8px;
+    padding: 12px;
+    height: 220px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+}
+
+.chat-input {
+    display: flex;
+    gap: 8px;
+}
+
+#message-input {
+    flex: 1;
+    border-radius: 6px;
+    border: none;
+    background: #23272a;
+    color: #f1f1f1;
+    font-size: 1em;
+    outline: none;
+}
+
+#send-button {
+    background: #7289da;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+
+}
+
+#send-button:hover {
+    background: #5865f2;
+}
