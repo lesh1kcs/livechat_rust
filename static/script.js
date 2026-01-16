@@ -1,28 +1,48 @@
 let socket;
 let username;
 
-document.getElementById("join-button").addEventListener("click", () => {
-    const input = document.getElementById("username-input)")
-    if (input.value.trim() !== ""){
-        username = input.value.trim();
-        document.getElementById("authentication-box").style.display = "none";
-        document.getElementById("chat-messages").style.display = "block";
-        connectWebSocket();
+window.onload = function() {
+    connectWebSocket();
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    const joinButton = document.getElementById("join-button");
+    const usernameinput = document.getElementById("username-input");
+
+    if (joinButton){
+        joinButton.addEventListener("click", handleJoin);
     }
+
+    if (usernameinput){
+        usernameinput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter"){
+                handleJoin();
+            }
+        });
+    }
+
+    MessageListener();
 });
 
-username = prompt("Please enter your username:");
-if (username && username.trim() !== "") {
-    username = username.trim();
-    document.getElementById("authentication-box").style.display = "none";
-    document.getElementById("chat-messages").style.display = "block";
-    connectWebSocket();
-} else {
-    alert("Username is required!");
-    location.reload();
+function handleJoin(){
+    const input = document.getElementById("username-input");
+    if (input && input.value.trim() !== ""){
+        username = input.value.trim();
+
+        const authBox = document.getElementById("authentication-box");
+        if (authBox){
+            authBox.style.display = "none";
+        }
+
+        const chatBox = document.querySelector(".chat-box");
+        if (chatBox){
+            chatBox.style.display = "block";
+        }
+    }
 }
 
 function connectWebSocket(){
+    console.log(`Connecting as: ${username}`);
     socket = new WebSocket("ws://localhost:3001/send");
 
     socket.onopen = () => {
@@ -30,26 +50,63 @@ function connectWebSocket(){
     };
 
     socket.onmessage = (event) => {
-        const chatMessages = document.getElementById("chat-messages");
-        const msgDiv = document.createElement("div");
-        msgDiv.textContent = event.data;
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        displayMessage(event.data);
     };
+
+    socket.onclose = () => {
+        console.log("WebSocket connection closed");
+    };
+
+    socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+}
+
+function displayMessage(message){
+    const chatMessages = document.getElementById("chat-messages");
+    if(!chatMessages) return;
+
+    const Divmsg = document.createElement("div");
+    Divmsg.className = 'message';
+    Divmsg.textContent = message;
+
+    chatMessages.appendChild(Divmsg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    console.log(`Message: ${message}`);
+
+
 }
 
 function sendMessage(){
     const input = document.getElementById("message-input");
-    if (input.value.trim() && socket.readyState === WebSocket.OPEN) {
-        const message = `${username}: ${input.value.trim()}`;
-        socket.send(message);
-        input.value = "";
+
+    if (!input || !input.value.trim()) return;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.error("❌ Not connected!");
+        return;
     }
+
+    const message = `${username}: ${input.value.trim()}`;
+    socket.send(message);
+    input.value = "";
+
+    console.log(`Sent: ${message}`);
+
 }
 
-document.getElementById("send-button").addEventListener("click", sendMessage);
-document.getElementById("message-input").addEventListener("keypress", (e) => {
-    if (e.key === "Enter"){
-        sendMessage();
+function MessageListener(){
+    const sendButton = document.getElementById("send-button");
+    if (sendButton){
+        sendButton.addEventListener("click", sendMessage);
     }
-});
+
+    const messageInput = document.getElementById("message-input");
+    if (messageInput){
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter"){
+                sendMessage();
+            }
+        });
+    }
+}
