@@ -1,0 +1,54 @@
+#username,
+#password,
+#submit {
+    width: 300px;
+    height: 40px;
+    margin-bottom: 10px;
+    border-radius: 0;
+
+    padding: 10px;
+    font-size: 16px;
+    transition: width 0.3s;
+}
+
+#username {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#submit {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+p {
+    width: 300px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+input:hover,
+input:focus {
+    width: 320px !important;
+    transition: width 0.3s;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button {
+    width: 320px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}

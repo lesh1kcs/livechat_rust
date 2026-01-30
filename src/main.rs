@@ -1,9 +1,12 @@
+mod auth;
+mod database;
+
 use axum::{
     extract::WebSocketUpgrade,
     extract::Extension,
     extract::ws::{Message, WebSocket},
-    response::{IntoResponse, Html},
-    routing::get,
+    response::{IntoResponse, Html, Redirect},
+    routing::{get,post},
     Router,
 };
 
@@ -12,6 +15,9 @@ use std::{net::SocketAddr};
 use futures::{SinkExt, StreamExt};
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
+use database::ChatDatabase;
+
+use crate::auth::login_handler;
 
 type Clients = Arc<Mutex<Vec<mpsc::UnboundedSender<Message>>>>;
 
@@ -56,27 +62,42 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
     }
 }
 async fn mpsc_message(clients: &Clients, message: Message) {
-    let clients_lock = clients.lock().unwrap();
-    for client in clients_lock.iter() {
-        let _ = client.send(message.clone());
+    let mut clients_lock = clients.lock().unwrap();
+    let mut disconnected = Vec::new();
+
+    for (i, client) in clients_lock.iter().enumerate() {
+        if client.send(message.clone()).is_err() {
+            disconnected.push(i);
+        }
     }
 
-    println!("Broadcasted message to {} clients", clients_lock.len());
+    for &i in disconnected.iter().rev() {
+        clients_lock.remove(i);
+    }
 }
 
 async fn index_handler() -> impl IntoResponse {
     Html(std::fs::read_to_string("templates/index.html").unwrap())
 }
 
+async fn authentication_handler() -> impl IntoResponse {
+    Html(std::fs::read_to_string("templates/authentication.html").unwrap())
+}
+
 #[tokio::main]
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(Vec::new()));
+    let db = ChatDatabase::new("chat.db").expect("Failed to initialize database!");
     
     let app = Router::new()
-        .route("/", get(index_handler))
+        .route("/", get(|| async { Redirect::to("/auth") }))
+        .route("/auth", get(authentication_handler).post(login_handler))
+        // .route("/api/login", post(auth::login_handler))
+        .route("/chat", get(index_handler))
         .route("/send", get(websocket_handler))
         .nest_service("/static", ServeDir::new("static"))
-        .layer(Extension(clients));
+        .layer(Extension(clients))
+        .layer(Extension(db));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     println!("Listening on {}", addr);

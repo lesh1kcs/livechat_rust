@@ -24,20 +24,51 @@ document.addEventListener("DOMContentLoaded", () => {
     MessageListener();
 });
 
-function handleJoin(){
+async function handleJoin(){
     const input = document.getElementById("username-input");
     if (input && input.value.trim() !== ""){
-        username = input.value.trim();
+        alert("Please enter your username")
+        return;
+    }
 
-        const authBox = document.getElementById("authentication-box");
-        if (authBox){
-            authBox.style.display = "none";
-        }
+    username = input.value.trim();
 
-        const chatBox = document.querySelector(".chat-box");
-        if (chatBox){
-            chatBox.style.display = "block";
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({username:username})
+        });
+        const data = await respomse.json();
+
+        if (data.success) {
+            sessionId = data.session_id;
+            hideAuthBox();
+            showChatBox();
+            connectWebSocket();
+        } else {
+            alert(data.message);
+            console.error(`Login FAILED: ${data.nessage}`)
         }
+    } catch (error) {
+        console.error('Login error', error);
+        alert('Failed to connect to server. Try again')
+    }
+}
+
+function hideAuthBox(){
+    const authBox = document.getElementsByIdI("authentication-box")
+    if (authBox){
+        authBox.style.display = "none"
+    }
+}
+
+function showChatBox(){
+    const chatBox = document.querySelector(".chat-box")
+    if (chatBox){
+        chatBox.style.display="block";
     }
 }
 
