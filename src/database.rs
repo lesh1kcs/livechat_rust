@@ -10,6 +10,7 @@ pub struct ChatDatabase {
 pub struct User {
     pub id: i64,
     pub username: String,
+    pub password_hash: String,
     pub session_id: String,
     pub created_at: String,
 }
@@ -35,6 +36,7 @@ impl ChatDatabase {
             "CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
             session_id TEXT NOT NULL UNIQUE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )",
@@ -50,16 +52,26 @@ impl ChatDatabase {
         Ok(())
     }
 
-    pub fn register_user(&self, username: &str, session_id: &str) -> Result<i64>{
+    pub fn register_user(&self, username: &str, password_hash: &str, session_id: &str) -> Result<i64>{
         let conn = self.conn.lock().unwrap();
 
         conn.execute(
-            "INSERT INTO users(username, session_id) VALUES (?1, ?2)",
-            params![username, session_id],
+            "INSERT INTO users(username, password_hash, session_id) VALUES (?1, ?2, ?3)",
+            params![username, password_hash, session_id],
         )?;
 
         let user_id = conn.last_insert_rowid();
         Ok(user_id)
+    }
+
+    pub fn verify_password(&self,username: &str, password_hash: &str) -> Result<bool> {
+        let conn = self.conn.lock().unwrap();
+        let stored_hash: String = conn.query_row(
+         "SELECT password_hash FROM users WHERE username = ?1", 
+            params![username], 
+        |row| row.get(0),
+        )?;
+        Ok(stored_hash==password_hash)
     }
 
     pub fn username_exists(&self, username: &str) -> Result<bool> {
@@ -75,7 +87,7 @@ impl ChatDatabase {
 
         let rows_being_affected = conn.execute(
             "UPDATE users SET session_id = ?1 WHERE username = ?2",
-            params![username, new_session_id],
+            params![new_session_id, username],
         )?;
 
         if rows_being_affected > 0 {
@@ -90,7 +102,7 @@ impl ChatDatabase {
         let conn = self.conn.lock().unwrap();
 
         let mut stmt = conn.prepare(
-            "SELECT id, username, session_id, created_at
+            "SELECT id, username, password_hash, session_id, created_at
             FROM users
             WHERE session_id = ?1"
         )?;
@@ -99,8 +111,9 @@ impl ChatDatabase {
             Ok(User{
                 id: row.get(0)?,
                 username: row.get(1)?,
-                session_id: row.get(2)?,
-                created_at: row.get(3)?,
+                password_hash: row.get(2)?,
+                session_id: row.get(3)?,
+                created_at: row.get(4)?,
             })
         }).ok();
         Ok(user)
@@ -110,7 +123,7 @@ impl ChatDatabase {
         let conn = self.conn.lock().unwrap();
 
         let mut stmt = conn.prepare(
-            "SELECT id, username, session_id, created_at
+            "SELECT id, username, password_hash, session_id, created_at
             FROM users
             WHERE username = ?1"
         )?;
@@ -119,8 +132,9 @@ impl ChatDatabase {
             Ok(User{
                 id: row.get(0)?,
                 username: row.get(1)?,
-                session_id: row.get(2)?,
-                created_at: row.get(3)?,
+                password_hash: row.get(2)?,
+                session_id: row.get(3)?,
+                created_at: row.get(4)?,
             })
         }).ok();
         Ok(user)
@@ -146,14 +160,15 @@ impl ChatDatabase {
         let conn = self.conn.lock().unwrap();
 
         let mut stmt = conn.prepare(
-            "SELECT id, username, session_id, created_at FROM users")?;
+            "SELECT id, username, password_hash, session_id, created_at FROM users")?;
         
         let users = stmt.query_map([],|row| {
             Ok(User{
                 id: row.get(0)?,
                 username: row.get(1)?,
-                session_id: row.get(2)?,
-                created_at: row.get(3)?,
+                password_hash: row.get(2)?,
+                session_id: row.get(3)?,
+                created_at: row.get(4)?,
             })
         })?
         .collect::<Result<Vec<_>>>()?;

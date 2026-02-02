@@ -2,29 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LiveChat</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="authentication-box" class="authentication">
-        <div class="username-input">
-            <h2>Enter your name:</h2>
-            <input type="text" id="username-input" maxlength="20">
-            <button id="join-button">Join</button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat Room</h1>
+            <div id="user-info"></div>
         </div>
-    </div>
-
-
-    <div class="chat-box">
-        <div class="chat-messages" id="chat-messages">
-            <!-- Messages will be dynamically inserted here -->
+        
+        <div id="messages" class="messages"></div>
+        
+        <div class="input-container">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
         </div>
-        <div class="chat-input">
-            <input type="text" id="message-input" placeholder="Type your message" >
-            <button id="send-button">Send</button>
-        </div>
-
     </div>
 </body>
-<script src="../static/script.js"></script>
+    <script src="/static/script.js"></script>
 </html>

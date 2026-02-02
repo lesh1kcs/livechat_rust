@@ -18,6 +18,7 @@ use tokio::sync::mpsc;
 use database::ChatDatabase;
 
 use crate::auth::login_handler;
+use crate::auth::auth_get;
 
 type Clients = Arc<Mutex<Vec<mpsc::UnboundedSender<Message>>>>;
 
@@ -77,12 +78,18 @@ async fn mpsc_message(clients: &Clients, message: Message) {
 }
 
 async fn index_handler() -> impl IntoResponse {
-    Html(std::fs::read_to_string("templates/index.html").unwrap())
+    match std::fs::read_to_string("templates/index.html") {
+        Ok(content) => Html(content),
+        Err(e) => {
+            eprintln!("Failed to read index.html: {}", e);
+            Html("<h1>Error loading chat page</h1>".to_string())
+        }
+    }
 }
 
-async fn authentication_handler() -> impl IntoResponse {
-    Html(std::fs::read_to_string("templates/authentication.html").unwrap())
-}
+// async fn authentication_handler() -> impl IntoResponse {
+//     Html(std::fs::read_to_string("templates/authentication.html").unwrap())
+// }
 
 #[tokio::main]
 async fn main() {
@@ -91,8 +98,8 @@ async fn main() {
     
     let app = Router::new()
         .route("/", get(|| async { Redirect::to("/auth") }))
-        .route("/auth", get(authentication_handler).post(login_handler))
-        // .route("/api/login", post(auth::login_handler))
+        .route("/auth", get(auth_get).post(login_handler))
+        .route("/api/user", get(auth::get_user_handler))
         .route("/chat", get(index_handler))
         .route("/send", get(websocket_handler))
         .nest_service("/static", ServeDir::new("static"))

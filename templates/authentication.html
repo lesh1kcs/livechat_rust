@@ -3,19 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/static/auth.css">
-    <link rel="stylesheet" href="/static/static/style.css">
-    <title>Authentication</title>
+    <title>Chat Login</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="auth-box">
-        <form action="/auth" method="post">
-            <h2>Login</h2>
-            <input type="text" id="username" name="username" placeholder="Username" required>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-            <input type="submit" value="Authenticate">
+    <div class="auth-container">
+        <h1>Welcome to Chat</h1>
+        
+        <form action="/auth" method="POST">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    maxlength="20"
+                    required
+                    autofocus
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    minlength="6"
+                    required
+                >
+            </div>
+            
+            <button type="submit">Login / Register</button>
         </form>
-        <p class="description">Login using existing username and password, or register a new user by providing a new username and password.</p>
+        
+        <p class="info">New users will be automatically registered</p>
     </div>
 </body>
 </html>

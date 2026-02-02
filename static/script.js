@@ -1,91 +1,91 @@
 let socket;
 let username;
+let sessionId;
 
-window.onload = function() {
-    connectWebSocket();
-};
+// Source - https://stackoverflow.com/a/24103596
+// Posted by Mandeep Janjua, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-02-02, License - CC BY-SA 4.0
 
-document.addEventListener("DOMContentLoaded", () => {
-    const joinButton = document.getElementById("join-button");
-    const usernameinput = document.getElementById("username-input");
-
-    if (joinButton){
-        joinButton.addEventListener("click", handleJoin);
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
     }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
 
-    if (usernameinput){
-        usernameinput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter"){
-                handleJoin();
-            }
-        });
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
+    return null;
+}
 
-    MessageListener();
-});
+function eraseCookie(name) {
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
 
-async function handleJoin(){
-    const input = document.getElementById("username-input");
-    if (input && input.value.trim() !== ""){
-        alert("Please enter your username")
+document.addEventListener("DOMContentLoaded", async () => {
+    sessionId = getCookie('session_id');
+
+    if (!sessionId) {
+        window.location.href = '/auth';
         return;
     }
 
-    username = input.value.trim();
-
     try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({username:username})
+        const response = await fetch('/api/user', {
+            method: 'GET',
+            credentials: 'include'
         });
-        const data = await respomse.json();
 
-        if (data.success) {
-            sessionId = data.session_id;
-            hideAuthBox();
-            showChatBox();
+        if (response.ok) {
+            const data = await response.json();
+            username = data.username;
+            document.getElementById('user-info').textContent = `Logged in as: ${username}`;
             connectWebSocket();
         } else {
-            alert(data.message);
-            console.error(`Login FAILED: ${data.nessage}`)
+            eraseCookie('session_id');
+            window.location.href = '/auth';
+            return;
         }
     } catch (error) {
-        console.error('Login error', error);
-        alert('Failed to connect to server. Try again')
+        console.error('Failed to fetch user:', error);
+        window.location.href = '/auth';
+        return;
     }
-}
 
-function hideAuthBox(){
-    const authBox = document.getElementsByIdI("authentication-box")
-    if (authBox){
-        authBox.style.display = "none"
-    }
-}
+    const input = document.getElementById('message-input');
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+});
 
-function showChatBox(){
-    const chatBox = document.querySelector(".chat-box")
-    if (chatBox){
-        chatBox.style.display="block";
-    }
-}
-
-function connectWebSocket(){
-    console.log(`Connecting as: ${username}`);
-    socket = new WebSocket("ws://localhost:3001/send");
+function connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(`${protocol}//${window.location.host}/send`);
 
     socket.onopen = () => {
         console.log("WebSocket connection established");
+        addSystemMessage('Connected to chat');
     };
 
     socket.onmessage = (event) => {
-        displayMessage(event.data);
+        console.log("Received:", event.data);
+        addMessage(event.data);
     };
 
     socket.onclose = () => {
         console.log("WebSocket connection closed");
+        addSystemMessage('Disconnected from chat');
     };
 
     socket.onerror = (error) => {
@@ -93,28 +93,14 @@ function connectWebSocket(){
     };
 }
 
-function displayMessage(message){
-    const chatMessages = document.getElementById("chat-messages");
-    if(!chatMessages) return;
-
-    const Divmsg = document.createElement("div");
-    Divmsg.className = 'message';
-    Divmsg.textContent = message;
-
-    chatMessages.appendChild(Divmsg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    console.log(`Message: ${message}`);
-
-
-}
-
-function sendMessage(){
+function sendMessage() {
     const input = document.getElementById("message-input");
 
     if (!input || !input.value.trim()) return;
+
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-        console.error("❌ Not connected!");
+        console.error("Not connected!");
+        addSystemMessage('Not connected');
         return;
     }
 
@@ -123,21 +109,30 @@ function sendMessage(){
     input.value = "";
 
     console.log(`Sent: ${message}`);
-
 }
 
-function MessageListener(){
-    const sendButton = document.getElementById("send-button");
-    if (sendButton){
-        sendButton.addEventListener("click", sendMessage);
-    }
+function addMessage(message) {
+    const messagesDiv = document.getElementById('messages');
+    const messageEl = document.createElement('div');
+    messageEl.className = 'message';
+    messageEl.textContent = message;
+    messagesDiv.appendChild(messageEl);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
-    const messageInput = document.getElementById("message-input");
-    if (messageInput){
-        messageInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter"){
-                sendMessage();
-            }
-        });
+function addSystemMessage(message) {
+    const messagesDiv = document.getElementById('messages');
+    const messageEl = document.createElement('div');
+    messageEl.className = 'message system';
+    messageEl.textContent = `[System] ${message}`;
+    messagesDiv.appendChild(messageEl);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function logout() {
+    if (socket) {
+        socket.close();
     }
+    eraseCookie('session_id');
+    window.location.href = '/auth';
 }

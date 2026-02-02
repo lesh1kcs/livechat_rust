@@ -1,80 +1,212 @@
-body {
-    background: #181818;
-    color: #f1f1f1;
-    font-family: 'Segoe UI', Arial, sans-serif;
+* {
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     height: 100vh;
-}
-
-.authentication {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(24, 24, 24, 0.9);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 }
 
-.authentication-box{
-    background: #23272a;
-    padding: 20px;
-    text-align: center;
-}
-
-.chat-box {
-    background: #23272a;
+.chat-container {
+    width: 90%;
+    max-width: 800px;
+    height: 90vh;
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
-    width: 600px;
-    padding: 24px 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    overflow: hidden;
 }
 
-.chat-messages {
-    background: #2c2f33;
-    border-radius: 8px;
-    padding: 12px;
-    height: 220px;
-    overflow-y: auto;
-    margin-bottom: 8px;
-}
-
-.chat-input {
+.chat-header {
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+#user-info {
+    font-size: 14px;
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+/* THIS IS THE IMPORTANT PART - Messages area */
+.messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;  /* ← Visible background! */
+    display: flex;
+    flex-direction: column;
     gap: 8px;
+}
+
+/* Make scrollbar prettier */
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.message {
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+    max-width: 80%;
+    animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.system {
+    background: #fff3cd;
+    color: #856404;
+    font-style: italic;
+    border-left: 4px solid #ffc107;
+    max-width: 100%;
+}
+
+.input-container {
+    display: flex;
+    padding: 20px;
+    background: white;
+    border-top: 2px solid #e9ecef;
+    gap: 10px;
 }
 
 #message-input {
     flex: 1;
-    border-radius: 6px;
-    border: none;
-    background: #23272a;
-    color: #f1f1f1;
-    font-size: 1em;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
     outline: none;
+    transition: border-color 0.3s;
 }
 
-#send-button {
-    background: #7289da;
-    color: #fff;
+#message-input:focus {
+    border-color: #667eea;
+}
+
+button {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border: none;
-    border-radius: 6px;
-    padding: 8px 8px;
+    border-radius: 25px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
-
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-#send-button:hover {
-    background: #5865f2;
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Authentication page styles */
+.auth-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.auth-container h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.auth-container button {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.info {
+    text-align: center;
+    margin-top: 15px;
+    color: #666;
+    font-size: 13px;
+}
+
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
 }
